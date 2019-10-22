@@ -101,11 +101,13 @@ class AppListActivity : AppCompatActivity() {
                 appItemViewHolder.icon.setImageDrawable(appInfo.icon)
                 appItemViewHolder.name.text = appInfo.name
                 appItemViewHolder.isSimulation.isChecked = appInfo.isSimulation
-                appItemViewHolder.isSimulation.setOnCheckedChangeListener { _, b ->
-                    // 设置勾选事件
-                    appInfo.isSimulation = b
-                    // 更新模拟App配置
-                    updateSimulationApps()
+                appItemViewHolder.isSimulation.setOnCheckedChangeListener { checkBoxView, b ->
+                    if (checkBoxView.isShown) {
+                        // 设置勾选事件
+                        appInfo.isSimulation = b
+                        // 更新模拟App配置
+                        updateSimulationApps()
+                    }
                 }
                 return convertView
             }
@@ -155,7 +157,7 @@ class AppListActivity : AppCompatActivity() {
         simulationAppList ?: return
         // 设置模拟应用状态
         simulationAppList.forEach {
-            appsInfoMap[it]!!.isSimulation = true
+            appsInfoMap[it]?.isSimulation = true
         }
     }
 

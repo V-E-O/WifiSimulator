@@ -41,10 +41,13 @@ object WifiSimulator {
             findAndHookMethod(XposedUtil::class.java.name, lPParam.classLoader, "isXposedActive", object : XC_MethodHook() {
                 @Throws(Throwable::class)
                 override fun beforeHookedMethod(param: XC_MethodHook.MethodHookParam?) {
+                    Log.e("veo", "hook true")
                     param!!.result = true
                 }
             })
+            Log.e("veo", "hook done")
         }catch (t: Throwable) {
+            Log.e("veo", "${WifiSimulator::class.java.name} -> ${t.localizedMessage}")
             XposedBridge.log("${WifiSimulator::class.java.name} -> ${t.localizedMessage}")
         }
     }

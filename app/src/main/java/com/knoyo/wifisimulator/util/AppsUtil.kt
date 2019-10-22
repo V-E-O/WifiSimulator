@@ -1,6 +1,7 @@
 package com.knoyo.wifisimulator.util
 
 import android.content.Context
+import android.content.pm.ApplicationInfo
 import com.knoyo.wifisimulator.bean.AppInfo
 import android.content.pm.PackageInfo
 
@@ -37,11 +38,13 @@ class AppsUtil(val context: Context) {
         // 获取App列表
         val packages = context.packageManager.getInstalledPackages(0)
         packages.forEach {
-            val appInfo = AppInfo(
-                    it.applicationInfo.loadIcon(context.packageManager),
-                    it.applicationInfo.loadLabel(context.packageManager).toString()
-            )
-            appsMap[it.packageName] = appInfo
+            if ((it.applicationInfo.flags and ApplicationInfo.FLAG_SYSTEM)== 0) {
+                val appInfo = AppInfo(
+                        it.applicationInfo.loadIcon(context.packageManager),
+                        it.applicationInfo.loadLabel(context.packageManager).toString()
+                )
+                appsMap[it.packageName] = appInfo
+            }
         }
         return appsMap
     }

@@ -2,9 +2,15 @@ package com.knoyo.wifisimulator.xposed.hook
 
 import android.app.Application
 import android.content.Context
+import android.util.Log
 import com.knoyo.wifisimulator.preferences.WifiInfoPrefs
 import de.robv.android.xposed.*
 import de.robv.android.xposed.callbacks.XC_LoadPackage
+import de.robv.android.xposed.XposedHelpers
+
+
+
+
 
 /**
  * @Title: Main类
@@ -43,6 +49,32 @@ class Main: IXposedHookZygoteInit, IXposedHookLoadPackage {
     */
     @Throws(Throwable::class)
     override fun handleLoadPackage(lpparam: XC_LoadPackage.LoadPackageParam) {
+        Log.e("veo1", lpparam.packageName)
+
+        val mContext = XposedHelpers.callMethod(XposedHelpers.callStaticMethod(XposedHelpers.findClass("android.app.ActivityThread", lpparam.classLoader), "currentActivityThread"), "getSystemContext") as Context
+        // 获取配置
+        val wifiInfoPrefs = WifiInfoPrefs(mContext)
+
+        // 开始hook
+        when (lpparam.packageName) {
+            // 此应用(WIFI模拟器)
+            WifiSimulator.WIFI_SIMULATOR_PKG_NAME -> {
+                WifiSimulator.initXposedActive(lpparam)
+            }
+        }
+
+        Log.e("veo1", wifiInfoPrefs.apps)
+        Log.e("veo1", wifiInfoPrefs.wifiName)
+
+        // 判断是否开启模拟
+        if (!wifiInfoPrefs.isSimulation) return
+
+        // 判断模拟WIFI应用列表是否包含此应用
+        if (wifiInfoPrefs.apps.contains(lpparam.packageName)) {
+            fakeWifiConnection.initFakeWifiConnection(lpparam)
+            SimulationWifiInfo.initSimulationWeWordWifi(mContext)
+        }
+
         // 注册Hook
         XposedHelpers.findAndHookMethod(Application::class.java, "attach", Context::class.java, object : XC_MethodHook() {
             // 方法执行前hook
@@ -57,6 +89,8 @@ class Main: IXposedHookZygoteInit, IXposedHookLoadPackage {
                 val mContext = param.args[0] as Context
                 // 获取配置
                 val wifiInfoPrefs = WifiInfoPrefs(mContext)
+
+                Log.e("veo2", lpparam.packageName)
                 // 开始hook
                 when (lpparam.packageName) {
                     // 此应用(WIFI模拟器)
@@ -64,8 +98,13 @@ class Main: IXposedHookZygoteInit, IXposedHookLoadPackage {
                         WifiSimulator.initXposedActive(lpparam)
                     }
                 }
+
+                Log.e("veo2", wifiInfoPrefs.apps)
+                Log.e("veo2", wifiInfoPrefs.wifiName)
+
                 // 判断是否开启模拟
                 if (!wifiInfoPrefs.isSimulation) return
+
                 // 判断模拟WIFI应用列表是否包含此应用
                 if (wifiInfoPrefs.apps.contains(lpparam.packageName)) {
                     fakeWifiConnection.initFakeWifiConnection(lpparam)
